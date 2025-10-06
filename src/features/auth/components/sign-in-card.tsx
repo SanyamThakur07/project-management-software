@@ -17,28 +17,27 @@ import { Label } from "@/components/ui/label";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import Link from "next/link";
-
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
+import { loginSchema } from "../schemas";
+import { useLogin } from "../api/use-login";
 
 export const SignInCard = () => {
-  const { register, handleSubmit } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const { register, handleSubmit } = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log(data);
+  const { mutate, isPending } = useLogin();
+
+  const onSubmit = (values: z.infer<typeof loginSchema>) => {
+    mutate({ json: values });
   };
 
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader className="break-words pb-2">
+      <CardHeader className="pb-2 break-words">
         <CardTitle className="text-2xl font-bold break-words">
           Log in to your account
         </CardTitle>
@@ -64,6 +63,7 @@ export const SignInCard = () => {
               })}
               type="email"
               id="email"
+              disabled={isPending}
               placeholder="me@example.com"
               autoFocus
             />
@@ -81,12 +81,14 @@ export const SignInCard = () => {
               })}
               type="password"
               id="password"
+              disabled={isPending}
               placeholder="********"
             />
           </div>
           <Button
             variant={"primary"}
             type="submit"
+            disabled={isPending}
             className="w-full rounded-md bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
           >
             Sign In
@@ -97,21 +99,33 @@ export const SignInCard = () => {
         <Separator />
       </div>
       <CardContent className="space-y-2 pt-0">
-        <Button variant={"outline"} className="w-full rounded-md px-3 py-2">
+        <Button
+          variant={"outline"}
+          disabled={isPending}
+          className="w-full rounded-md px-3 py-2"
+        >
           <FcGoogle className="mr-1 inline h-4 w-4" />
           Sign in with Google
         </Button>
-        <Button variant={"outline"} className="w-full rounded-md px-3 py-2">
+        <Button
+          variant={"outline"}
+          disabled={isPending}
+          className="w-full rounded-md px-3 py-2"
+        >
           <FaGithub className="mr-1 inline h-4 w-4" />
           Sign in with Github
         </Button>
       </CardContent>
       <CardContent>
-        <p className="text-sm text-muted-foreground font-medium">Don't  have and account?
-          <Link  href={"/sign-up"} className="ml-1 text-blue-600 hover:underline">
+        <p className="text-muted-foreground text-sm font-medium">
+          Don't have and account?
+          <Link
+            href={"/sign-up"}
+            className="ml-1 text-blue-600 hover:underline"
+          >
             Sign Up
           </Link>
-           </p>
+        </p>
       </CardContent>
     </Card>
   );

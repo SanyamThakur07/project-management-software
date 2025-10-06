@@ -17,16 +17,14 @@ import { Label } from "@/components/ui/label";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import Link from "next/link";
-
-const formSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(8),
-});
+import { signUpSchema } from "../schemas";
+import { useRegister } from "../api/use-register";
 
 export const SignUpCard = () => {
-  const { register, handleSubmit } = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const { mutate, isPending } = useRegister();
+
+  const { register, handleSubmit } = useForm<z.infer<typeof signUpSchema>>({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -34,13 +32,13 @@ export const SignUpCard = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log(data);
+  const onSubmit = (values: z.infer<typeof signUpSchema>) => {
+    mutate({ json: values });
   };
 
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader className="break-words pb-2">
+      <CardHeader className="pb-2 break-words">
         <CardTitle className="text-2xl font-bold break-words">
           Create your account
         </CardTitle>
@@ -54,11 +52,11 @@ export const SignUpCard = () => {
       <CardContent className="pt-0 pb-2">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div className="flex flex-col gap-1">
-            <Label htmlFor="name" className="text-sm mt-1 font-medium">
+            <Label htmlFor="name" className="mt-1 text-sm font-medium">
               Name
             </Label>
             <Input
-              {...register("email", {
+              {...register("name", {
                 required: {
                   value: true,
                   message: "Name is required",
@@ -66,6 +64,7 @@ export const SignUpCard = () => {
               })}
               type="text"
               id="name"
+              disabled={isPending}
               placeholder="John"
               autoFocus
             />
@@ -83,6 +82,7 @@ export const SignUpCard = () => {
               })}
               type="email"
               id="email"
+              disabled={isPending}
               placeholder="me@example.com"
             />
           </div>
@@ -99,12 +99,14 @@ export const SignUpCard = () => {
               })}
               type="password"
               id="password"
+              disabled={isPending}
               placeholder="********"
             />
           </div>
           <Button
             variant={"primary"}
             type="submit"
+            disabled={isPending}
             className="w-full rounded-md bg-blue-600 px-3 py-2 text-white hover:bg-blue-700"
           >
             Sign In
@@ -115,21 +117,33 @@ export const SignUpCard = () => {
         <Separator />
       </div>
       <CardContent className="space-y-2 pt-0">
-        <Button variant={"outline"} className="w-full rounded-md px-3 py-2">
+        <Button
+          variant={"outline"}
+          disabled={isPending}
+          className="w-full rounded-md px-3 py-2"
+        >
           <FcGoogle className="mr-1 inline h-4 w-4" />
           Sign in with Google
         </Button>
-        <Button variant={"outline"} className="w-full rounded-md px-3 py-2">
+        <Button
+          variant={"outline"}
+          disabled={isPending}
+          className="w-full rounded-md px-3 py-2"
+        >
           <FaGithub className="mr-1 inline h-4 w-4" />
           Sign in with Github
         </Button>
       </CardContent>
       <CardContent>
-        <p className="text-sm text-muted-foreground font-medium">Already  have and account?
-          <Link  href={"/sign-in"} className="ml-1 text-blue-600 hover:underline">
+        <p className="text-muted-foreground text-sm font-medium">
+          Already have and account?
+          <Link
+            href={"/sign-in"}
+            className="ml-1 text-blue-600 hover:underline"
+          >
             Sign In
           </Link>
-           </p>
+        </p>
       </CardContent>
     </Card>
   );
